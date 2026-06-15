@@ -1,5 +1,58 @@
 # Linux Homelab Sandbox: Automated Patching with Ansible & Prometheus/Grafana Monitoring
 
+```mermaid
+flowchart TD
+    %% 定義顏色與樣式 (企業級視覺化)
+    classDef cloud fill:#0ea5e9,stroke:#0284c7,stroke-width:2px,color:#fff;
+    classDef hardware fill:#475569,stroke:#334155,stroke-width:2px,color:#fff;
+    classDef hypervisor fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,stroke-dasharray: 5 5,color:#0f172a;
+    classDef control fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff;
+    classDef rhel fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#fff;
+    classDef rocky fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#fff;
+    classDef ubuntu fill:#f97316,stroke:#ea580c,stroke-width:2px,color:#fff;
+
+    %% 外部網路層
+    Internet((fa:fa-globe Internet)):::cloud
+    Router[fa:fa-network-wired ISP Router]:::hardware
+    PC[fa:fa-desktop Physical PC Host Windows]:::hardware
+
+    Internet <-->|Fiber / WAN| Router
+    Router <-->|Home LAN| PC
+
+    %% 虛擬化宿主機層
+    subgraph Hypervisor [fa:fa-cubes VMware Workstation Pro / Virtual Network: 192.168.213.x]
+        direction TB
+        
+        %% 控制與監控中心 (綠色)
+        VM1["fa:fa-linux VM1: Control Node<br/>IP: 192.168.213.10<br/>OS: Rocky Linux 10<br/>━━━━━━━━━━━━━<br/>fa:fa-cogs Ansible Engine<br/>fa:fa-chart-pie Prometheus<br/>fa:fa-chart-line Grafana (Port 3000)"]:::control
+
+        %% 生產環境目標層
+        subgraph Prod [Production Targets]
+            direction LR
+            VM2["fa:fa-linux VM2: Web 01<br/>IP: 192.168.213.21<br/>OS: RHEL 9<br/>━━━━━━━━━━━━━<br/>fa:fa-server Nginx<br/>fa:fa-microchip Node Exporter"]:::rhel
+            
+            VM3["fa:fa-linux VM3: Web 02<br/>IP: 192.168.213.22<br/>OS: Rocky Linux 9<br/>━━━━━━━━━━━━━<br/>fa:fa-server Nginx<br/>fa:fa-microchip Node Exporter"]:::rocky
+            
+            VM4["fa:fa-linux VM4: DB 01<br/>IP: 192.168.213.31<br/>OS: Ubuntu 22.04<br/>━━━━━━━━━━━━━<br/>fa:fa-database PostgreSQL<br/>fa:fa-microchip Node Exporter"]:::ubuntu
+        end
+    end
+
+    %% 網路橋接
+    PC <-->|NAT / Bridged| Hypervisor
+
+    %% Ansible 自動化指令流向 (粗實線)
+    VM1 ==>|fa:fa-terminal SSH Port 22<br/>Automated Patching| VM2
+    VM1 ==>|fa:fa-terminal SSH Port 22<br/>Automated Patching| VM3
+    VM1 ==>|fa:fa-terminal SSH Port 22<br/>Automated Patching| VM4
+
+    %% Prometheus 數據採集流向 (虛線)
+    VM2 -.->|fa:fa-search Pull Metrics<br/>Port 9100| VM1
+    VM3 -.->|fa:fa-search Pull Metrics<br/>Port 9100| VM1
+    VM4 -.->|fa:fa-search Pull Metrics<br/>Port 9100| VM1
+```
+
+
+
 ## 📌 Project Overview
 This is a personal, self-hosted homelab environment built to experiment with multi-distribution Linux systems administration, configuration management, and infrastructure observability. 
 
